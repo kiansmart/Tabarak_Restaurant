@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منيو فول وفلافل ومشويات تبارك</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    
+    <!-- React & ReactDOM (UMD) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel (for JSX/Typescript in browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f9f7f2;
+            color: #3d2c1d;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c9a961;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b09355;
+        }
+        
+        /* Hide scrollbar for horizontal scrolling areas but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            70% { transform: translate(-50%, 0) scale(1.05); opacity: 1; }
+            100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .animate-slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+        .animate-bounce-in {
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* Custom Scrollbar for Cart Modal */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #ccc;
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#c9a961',
+                        secondary: '#3d2c1d',
+                        background: '#f9f7f2',
+                    }
+                }
+            }
+        }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-presets="typescript,react">
+        const { useState, useEffect } = React;
+
+        // --- TYPES ---
+        interface PriceOption {
+            label: string;
+            price: number;
+        }
+
+        interface MenuItemData {
+            id: string;
+            name: string;
+            description?: string;
+            image: string;
+            price: number | PriceOption[];
+            category: string;
+        }
+
+        interface CartItem extends MenuItemData {
+            selectedSize: string;
+            selectedPrice: number;
+            quantity: number;
+        }
+
+        type CartType = 'dinein' | 'delivery';
+
+        interface CategoryData {
+            id: string;
+            title: string;
+            icon: string;
+            items: MenuItemData[];
+        }
+
+        interface MainCategory {
+            id: string;
+            title: string;
+            icon: string;
+            subCategories: CategoryData[];
+        }
+
+        // --- DATA ---
+        const menuData: MainCategory[] = [
+          {
+            id: 'sandwiches',
+            title: 'السندوتشات',
+            icon: 'fa-burger',
+            subCategories: [
+              {
+                id: 'foul',
+                title: 'سندوتشات الفول',
+                icon: 'fa-bowl-food',
+                items: [
+                  { id: 'f1', name: 'فول', price: 10, image: '', category: 'foul' },
+                  { id: 'f2', name: 'فول حار', price: 11, image: '', category: 'foul' },
+                  { id: 'f3', name: 'فول زيت زيتون', price: 12, image: '', category: 'foul' },
+                  { id: 'f4', name: 'فول زبدة', price: 15, image: '', category: 'foul' },
+                  { id: 'f5', name: 'فول اسكندرانى', price: 12, image: '', category: 'foul' },
+                  { id: 'f6', name: 'فول ليمون معصفر', price: 12, image: '', category: 'foul' },
+                  { id: 'f7', name: 'فول على بيض مسلوق', price: 20, image: '', category: 'foul' },
+                  { id: 'f8', name: 'فول على بيض اومليت', price: 20, image: '', category: 'foul' },
+                  { id: 'f9', name: 'فول على بابا غنوج', price: 15, image: '', category: 'foul' },
+                  { id: 'f10', name: 'فول على باذنجان', price: 15, image: '', category: 'foul' },
+                  { id: 'f11', name: 'فول صلصة', price: 12, image: '', category: 'foul' },
+                  { id: 'f12', name: 'فول سجق', price: 20, image: '', category: 'foul' },
+                  { id: 'f13', name: 'فول بسطرمة', price: 20, image: '', category: 'foul' },
+                  { id: 'f14', name: 'فول على بطاطس', price: 15, image: '', category: 'foul' },
+                  { id: 'f15', name: 'فول على طعمية', price: 15, image: '', category: 'foul' },
+                ]
+              },
+              {
+                id: 'omelette',
+                title: 'سندوتشات الأومليت',
+                icon: 'fa-egg',
+                items: [
+                    { id: 'o1', name: 'اومليت سادة', price: 15, image: '', category: 'omelette', description: 'بيض مخفوق بالطريقة التقليدية' },
+                    { id: 'o2', name: 'اومليت زبدة', price: 17, image: '', category: 'omelette', description: 'بيض مخفوق مع زبدة طبيعية' },
+                    { id: 'o3', name: 'اومليت بسطرمة', price: 25, image: '', category: 'omelette' },
+                    { id: 'o4', name: 'اومليت سجق', price: 25, image: '', category: 'omelette' },
+                    { id: 'o5', name: 'اومليت بيتزا', price: 20, image: '', category: 'omelette' },
+                    { id: 'o6', name: 'اومليت جبنة رومى', price: 20, image: '', category: 'omelette' },
+                    { id: 'o7', name: 'اومليت جبنة شيدر', price: 20, image: '', category: 'omelette' },
+                    { id: 'o8', name: 'اومليت جبنة موتزريلا', price: 20, image: '', category: 'omelette' },
+                    { id: 'o9', name: 'اومليت ميكس جبن', price: 25, image: '', category: 'omelette' },
+                    { id: 'o10', name: 'بيض مسلوق', price: 15, image: '', category: 'omelette' },
+                    { id: 'o11', name: 'بيض مدحرج فى الزبدة', price: 20, image: '', category: 'omelette' },
+                ]
+              },
+              {
+                id: 'falafel',
+                title: 'سندوتشات الطعمية',
+                icon: 'fa-seedling',
+                items: [
+                    { id: 'fa1', name: 'طعمية', price: 10, image: '', category: 'falafel' },
+                    { id: 'fa2', name: 'طعمية مخصوص', price: 12, image: '', category: 'falafel' },
+                    { id: 'fa3', name: 'طعمية محشية', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa4', name: 'طعمية عين الكتكوت', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa5', name: 'طعمية على أومليت', price: 20, image: '', category: 'falafel' },
+                    { id: 'fa6', name: 'طعمية على بيض مسلوق', price: 20, image: '', category: 'falafel' },
+                    { id: 'fa7', name: 'طعمية على صوابع', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa8', name: 'طعمية على باذنجان', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa9', name: 'طعمية على بابا غنوج', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa10', name: 'طعمية على جبنة قريش', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa11', name: 'طعمية على جبنة قديمة', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa12', name: 'طعمية على جبنة رومى', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa13', name: 'طعمية على جبنة شيدر', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa14', name: 'طعمية على جبنة موتزريلا', price: 15, image: '', category: 'falafel' },
+                    { id: 'fa15', name: 'طعمية ميكس جبن', price: 25, image: '', category: 'falafel' },
+                    { id: 'fa16', name: 'طعمية جبنة كيرى', price: 20, image: '', category: 'falafel' },
+                    { id: 'fa17', name: 'طعمية بسطرمة', price: 20, image: '', category: 'falafel' },
+                    { id: 'fa18', name: 'طعمية سجق', price: 20, image: '', category: 'falafel' },
+                ]
+              },
+              {
+                id: 'potato',
+                title: 'سندوتشات البطاطس',
+                icon: 'fa-potato',
+                items: [
+                  { id: 'p1', name: 'صوابع', price: 12, image: '', category: 'potato' },
+                  { id: 'p2', name: 'صوابع كاتشب', price: 13, image: '', category: 'potato' },
+                  { id: 'p3', name: 'صوابع مايونيز', price: 13, image: '', category: 'potato' },
+                  { id: 'p4', name: 'صوابع كاتشب مايونيز', price: 14, image: '', category: 'potato' },
+                  { id: 'p5', name: 'صوابع على بيض مسلوق', price: 20, image: '', category: 'potato' },
+                  { id: 'p6', name: 'صوابع على أومليت', price: 20, image: '', category: 'potato' },
+                  { id: 'p7', name: 'صوابع على جبنة رومى', price: 20, image: '', category: 'potato' },
+                  { id: 'p8', name: 'صوابع على جبنة شيدر', price: 20, image: '', category: 'potato' },
+                  { id: 'p9', name: 'صوابع على جبنة موتزاريلا', price: 20, image: '', category: 'potato' },
+                  { id: 'p10', name: 'صوابع ميكس جبن', price: 25, image: '', category: 'potato' },
+                  { id: 'p11', name: 'صوابع على جبنة قريش', price: 15, image: '', category: 'potato' },
+                  { id: 'p12', name: 'صوابع على جبنة قديمة', price: 15, image: '', category: 'potato' },
+                  { id: 'p13', name: 'صوابع على بابا غنوج', price: 15, image: '', category: 'potato' },
+                  { id: 'p14', name: 'صوابع على باذنجان', price: 15, image: '', category: 'potato' },
+                  { id: 'p15', name: 'صوابع على سجق', price: 20, image: '', category: 'potato' },
+                  { id: 'p16', name: 'شيبسى', price: 12, image: '', category: 'potato' },
+                  { id: 'p17', name: 'مهروسة', price: 12, image: '', category: 'potato' },
+                  { id: 'p18', name: 'بانية', price: 12, image: '', category: 'potato' },
+                  { id: 'p19', name: 'مهروسة بالزبدة', price: 15, image: '', category: 'potato' },
+                  { id: 'p20', name: 'مهروسة على بيض مسلوق', price: 20, image: '', category: 'potato' },
+                  { id: 'p21', name: 'مهروسة على أومليت', price: 20, image: '', category: 'potato' },
+                  { id: 'p22', name: 'مهروسة على بسطرمة', price: 20, image: '', category: 'potato' },
+                  { id: 'p23', name: 'شيبسى كاتشب', price: 13, image: '', category: 'potato' },
+                  { id: 'p24', name: 'شيبسى مايونيز', price: 13, image: '', category: 'potato' },
+                  { id: 'p25', name: 'شيبسى كاتشب ومايونيز', price: 15, image: '', category: 'potato' },
+                  { id: 'p26', name: 'بانية كاتشب ومايونيز', price: 15, image: '', category: 'potato' },
+                ]
+              },
+              {
+                id: 'sharq-sandwiches',
+                title: 'سندوتشات الشرق',
+                icon: 'fa-utensils',
+                items: [
+                  { id: 'v1', name: 'شكشوكة', price: 12, image: '', category: 'variety' },
+                  { id: 'v2', name: 'مسقعة', price: 12, image: '', category: 'variety' },
+                  { id: 'v3', name: 'مسقعة سجق', price: 20, image: '', category: 'variety' },
+                  { id: 'v4', name: 'بابا غنوج', price: 12, image: '', category: 'variety' },
+                  { id: 'v5', name: 'باذنجان مقلى', price: 12, image: '', category: 'variety' },
+                  { id: 'v6', name: 'جبنة قريش', price: 12, image: '', category: 'variety' },
+                  { id: 'v7', name: 'جبنة قديمة', price: 12, image: '', category: 'variety' },
+                  { id: 'v8', name: 'جبنة مقلية', price: 20, image: '', category: 'variety' },
+                  { id: 'v9', name: 'جبنة مقلية على صوابع', price: 25, image: '', category: 'variety' },
+                  { id: 'v10', name: 'عجينة بلدى', price: 25, image: '', category: 'variety' },
+                  { id: 'v11', name: 'عجينة فرنساوى', price: 12, image: '', category: 'variety' },
+                ]
+              }
+            ]
+          },
+          {
+            id: 'grills',
+            title: 'المشويات',
+            icon: 'fa-fire',
+            subCategories: [
+              {
+                id: 'charcoal-grills',
+                title: 'مشويات على الفحم',
+                icon: 'fa-fire-burner',
+                items: [
+                  { id: 'g1', name: 'كباب', price: 0, image: '', category: 'charcoal-grills' },
+                  { id: 'g2', name: 'كفتة', price: 0, image: '', category: 'charcoal-grills' },
+                  { id: 'g3', name: 'طرب', price: 0, image: '', category: 'charcoal-grills' },
+                  { id: 'g4', name: 'شيش طاووق', price: 0, image: '', category: 'charcoal-grills' },
+                  { id: 'g5', name: 'مشكل', price: 0, image: '', category: 'charcoal-grills' },
+                  { id: 'g6', name: 'فراخ مشوية', price: 0, image: '', category: 'charcoal-grills' },
+                  { id: 'g7', name: 'نصف فراخ مشوية', price: 0, image: '', category: 'charcoal-grills' },
+                ]
+              }
+            ]
+          },
+          {
+            id: 'platters',
+            title: 'الأطباق',
+            icon: 'fa-drumstick-bite',
+            subCategories: [
+              {
+                id: 'folk-platters',
+                title: 'الأطباق',
+                icon: 'fa-bowl-food',
+                items: [
+                    { id: 'fp1', name: 'فول', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp2', name: 'فول زيت حار', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp3', name: 'فول زيت زيتون', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp4', name: 'فول زبدة', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp5', name: 'فول إسكندرانى', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp6', name: 'فول ليمون معصفر', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp7', name: 'فول على بيض مسلوق', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp8', name: 'فول صلصة', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp9', name: 'فول بسطرمة', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp10', name: 'فول سجق', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp11', name: 'شكشوكة', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp12', name: 'مسقعة', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp13', name: 'بابا غنوج', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp14', name: 'مهروسة', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp15', name: 'بانية', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp16', name: 'صوابع', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp17', name: 'باذنجان مقلى', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp18', name: 'باذنجان مخلل', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp19', name: 'عجة فرنساوى', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp20', name: 'جبنة قريش', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp21', name: 'جبنة قديمة', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp22', name: 'بيض أومليت', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp23', name: 'بيض أومليت بسطرمة', price: 0, image: '', category: 'folk-platters' },
+                    { id: 'fp24', name: 'بيض مسلوق', price: 0, image: '', category: 'folk-platters' },
+                ]
+              }
+            ]
+          },
+          {
+            id: 'boxes',
+            title: 'العلب',
+            icon: 'fa-box',
+            subCategories: [
+              {
+                id: 'folk-boxes',
+                title: 'علب شعبية',
+                icon: 'fa-bowl-food',
+                items: [
+                    { id: 'fb1', name: 'علبة فول سادة', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb2', name: 'علبة فول محوج', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb3', name: 'علبة فول اسكندرانى', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb4', name: 'علبة فول حار', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb5', name: 'علبة فول زيت زيتون', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb6', name: 'علبة فول زبدة', price: [{label: 'صغير', price: 15}, {label: 'وسط', price: 20}, {label: 'كبير', price: 25}], image: '', category: 'folk-boxes' },
+                    { id: 'fb7', name: 'علبة فول بسطرمة', price: [{label: 'صغير', price: 15}, {label: 'وسط', price: 20}, {label: 'كبير', price: 25}], image: '', category: 'folk-boxes' },
+                    { id: 'fb8', name: 'علبة فول سجق', price: [{label: 'صغير', price: 15}, {label: 'وسط', price: 20}, {label: 'كبير', price: 25}], image: '', category: 'folk-boxes' },
+                    { id: 'fb9', name: 'علبه فول صلصة', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb10', name: 'علبة مهروسة', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb11', name: 'علبة مهروسة بسطرمة', price: [{label: 'صغير', price: 15}, {label: 'وسط', price: 20}, {label: 'كبير', price: 25}], image: '', category: 'folk-boxes' },
+                    { id: 'fb12', name: 'علبة شكشوكة', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb13', name: 'علبة مسقعة', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb14', name: 'علبه مسقعة بالسجق', price: [{label: 'صغير', price: 15}, {label: 'وسط', price: 20}, {label: 'كبير', price: 25}], image: '', category: 'folk-boxes' },
+                    { id: 'fb15', name: 'علبه باب غنوج', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb16', name: 'علبة جبنة قريش', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb17', name: 'علبة جبنة قديمة', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                    { id: 'fb18', name: 'علبة عجينة', price: [{label: 'صغير', price: 10}, {label: 'وسط', price: 15}, {label: 'كبير', price: 20}], image: '', category: 'folk-boxes' },
+                ]
+              }
+            ]
+          }
+        ];
+
+        // --- COMPONENTS ---
+
+        // Navbar Component
+        const Navbar = ({ 
+            categories, 
+            activeCategory, 
+            searchQuery, 
+            onCategoryClick, 
+            onSearchChange,
+            onClearFilter
+        }) => {
+            return (
+                <nav className="sticky top-0 z-50 bg-white shadow-md border-b-2 border-primary">
+                    <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <ul className="flex flex-wrap gap-4 justify-center md:justify-start">
+                            <li>
+                                <button 
+                                    onClick={() => onCategoryClick('all')}
+                                    className={`text-lg font-bold transition-all duration-300 border-b-2 pb-1 ${
+                                        activeCategory === 'all' 
+                                        ? 'text-primary border-primary' 
+                                        : 'text-secondary border-transparent hover:text-primary'
+                                    }`}
+                                >
+                                    الكل
+                                </button>
+                            </li>
+                            {categories.map((cat) => (
+                                <li key={cat.id}>
+                                    <button 
+                                        onClick={() => onCategoryClick(cat.id)}
+                                        className={`text-lg font-bold transition-all duration-300 border-b-2 pb-1 ${
+                                            activeCategory === cat.id 
+                                            ? 'text-primary border-primary' 
+                                            : 'text-secondary border-transparent hover:text-primary'
+                                        }`}
+                                    >
+                                        {cat.title}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 w-full md:w-64">
+                                <input 
+                                    type="text" 
+                                    placeholder="ابحث عن منتج..." 
+                                    className="bg-transparent border-none outline-none w-full text-right"
+                                    value={searchQuery}
+                                    onChange={(e) => onSearchChange(e.target.value)}
+                                />
+                                <i className="fas fa-search text-primary ml-2"></i>
+                            </div>
+                            {searchQuery && (
+                                <button 
+                                    onClick={onClearFilter}
+                                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors"
+                                >
+                                    إلغاء البحث
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+            );
+        };
+
+        // MenuItem Component (Text-Only)
+        const MenuItem = ({ item, onAddToCart }) => {
+            const initialPrice = Array.isArray(item.price) ? item.price[0].price : item.price;
+            const initialSize = Array.isArray(item.price) ? item.price[0].label : 'واحد';
+
+            const [selectedPrice, setSelectedPrice] = useState(initialPrice);
+            const [selectedSize, setSelectedSize] = useState(initialSize);
+
+            const handleSizeChange = (option) => {
+                setSelectedPrice(option.price);
+                setSelectedSize(option.label);
+            };
+
+            const handleAdd = (type) => {
+                onAddToCart({
+                    ...item,
+                    selectedSize,
+                    selectedPrice,
+                    quantity: 1
+                }, type);
+            };
+
+            return (
+                <div className="flex flex-col p-4 bg-white rounded-lg border border-primary hover:border-[#b09355] shadow-sm hover:shadow-md transition-all duration-300 h-full relative overflow-hidden group">
+                    {/* Decorative side accent */}
+                    <div className="absolute top-0 right-0 bottom-0 w-1 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                    <div className="flex justify-between items-baseline mb-2 w-full">
+                        <h3 className="text-lg font-bold text-secondary shrink-0 ml-2">{item.name}</h3>
+                        
+                        {/* Dotted Leader */}
+                        <div className="flex-grow border-b-2 border-dotted border-gray-300 mx-2 relative -top-1 opacity-50"></div>
+                        
+                        {/* Price Display */}
+                        <div className="shrink-0 font-bold text-primary text-lg">
+                            {selectedPrice} <span className="text-xs text-gray-500">ج.م</span>
+                        </div>
+                    </div>
+
+                    {item.description && (
+                        <p className="text-xs text-gray-500 mb-4 leading-relaxed font-medium">{item.description}</p>
+                    )}
+
+                    <div className="mt-auto pt-3 border-t border-dashed border-gray-100">
+                        <div className="flex flex-col gap-3">
+                            {/* Size Selector */}
+                            {Array.isArray(item.price) && (
+                                <div className="flex flex-wrap gap-2 justify-end">
+                                    {item.price.map((opt) => (
+                                        <button
+                                            key={opt.label}
+                                            onClick={() => handleSizeChange(opt)}
+                                            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+                                                selectedSize === opt.label
+                                                ? 'bg-secondary text-primary'
+                                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 mt-1">
+                                <button 
+                                    onClick={() => handleAdd('dinein')}
+                                    className="flex-1 py-2 bg-white border border-[#28a745] text-[#28a745] hover:bg-[#28a745] hover:text-white rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1 group-btn"
+                                >
+                                    <i className="fas fa-store"></i> صالة
+                                </button>
+                                <button 
+                                    onClick={() => handleAdd('delivery')}
+                                    className="flex-1 py-2 bg-white border border-[#007bff] text-[#007bff] hover:bg-[#007bff] hover:text-white rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1 group-btn"
+                                >
+                                    <i className="fas fa-motorcycle"></i> دليفرى
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // CartModal Component
+        const CartModal = ({ 
+            isOpen, type, cart, onClose, onUpdateQuantity, onRemoveItem, onClearCart 
+        }) => {
+            const [formData, setFormData] = useState({
+                name: '',
+                table: '',
+                phone: '',
+                address: '',
+                building: '',
+                apartment: '',
+                notes: ''
+            });
+
+            if (!isOpen) return null;
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.selectedPrice * item.quantity), 0);
+            
+            let service = 0;
+            let tax = 0;
+            let deliveryFee = 0;
+            let total = 0;
+
+            if (type === 'dinein') {
+                service = subtotal * 0.10;
+                tax = (subtotal + service) * 0.14;
+                total = subtotal + service + tax;
+            } else {
+                deliveryFee = 15;
+                total = subtotal + deliveryFee;
+            }
+
+            const handleInputChange = (e) => {
+                setFormData({ ...formData, [e.target.id]: e.target.value });
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                
+                const orderTypeText = type === 'dinein' ? 'طلب صالة' : 'طلب دليفرى';
+                
+                let message = `*طلب جديد من: ${formData.name}*\n\n`;
+                message += `*نوع الطلب:* ${orderTypeText}\n`;
+                message += `--------------------------------\n`;
+                message += `*تفاصيل الطلب:*\n`;
+                cart.forEach(item => {
+                    message += `- ${item.name} (${item.selectedSize}) الكمية: ${item.quantity} = ${(item.selectedPrice * item.quantity).toFixed(2)} ج\n`;
+                });
+                message += `--------------------------------\n`;
+                message += `*ملخص الحساب:*\n`;
+                message += `المجموع الفرعي: ${subtotal.toFixed(2)} ج\n`;
+                
+                if (type === 'dinein') {
+                    message += `الخدمة (10%): ${service.toFixed(2)} ج\n`;
+                    message += `ضريبة القيمة المضافة (14%): ${tax.toFixed(2)} ج\n`;
+                } else {
+                    message += `رسوم الدليفرى: ${deliveryFee.toFixed(2)} ج\n`;
+                }
+                
+                message += `*الإجمالي: ${total.toFixed(2)} ج*\n`;
+                message += `--------------------------------\n`;
+                message += `*بيانات العميل:*\n`;
+                
+                if (type === 'dinein') {
+                    message += `الاسم: ${formData.name}\n`;
+                    message += `رقم الطاولة: ${formData.table}\n`;
+                } else {
+                    message += `الاسم: ${formData.name}\n`;
+                    message += `الهاتف: ${formData.phone}\n`;
+                    message += `العنوان: ${formData.address}, عمارة ${formData.building}`;
+                    if (formData.apartment) message += `, شقة ${formData.apartment}`;
+                    message += `\n`;
+                    if (formData.notes) message += `ملاحظات: ${formData.notes}\n`;
+                }
+
+                const phoneNumber = '201030566078';
+                const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappURL, '_blank');
+                
+                onClearCart();
+                onClose();
+            };
+
+            return (
+                <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-60 animate-fade-in p-4 overflow-y-auto">
+                    <div className="bg-white rounded-lg w-full max-w-lg shadow-2xl relative animate-slide-in">
+                        <button onClick={onClose} className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+                        
+                        <div className="p-6">
+                            <h2 className="text-2xl font-bold text-secondary border-b-2 border-primary pb-2 mb-4 flex items-center gap-2">
+                                <i className={`fas ${type === 'dinein' ? 'fa-store' : 'fa-motorcycle'}`}></i>
+                                {type === 'dinein' ? 'سلة الصالة' : 'سلة الدليفرى'}
+                            </h2>
+
+                            <div className="max-h-60 overflow-y-auto mb-4 custom-scrollbar">
+                                {cart.length === 0 ? (
+                                    <p className="text-center text-gray-500 py-8">السلة فارغة.</p>
+                                ) : (
+                                    cart.map((item, index) => (
+                                        <div key={index} className="flex justify-between items-center py-2 border-b border-dashed border-gray-200 last:border-0">
+                                            <div className="flex-1">
+                                                <p className="font-bold text-sm text-secondary">{item.name}</p>
+                                                <p className="text-xs text-gray-500">{item.selectedSize}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={() => onUpdateQuantity(index, -1)} className="bg-gray-200 rounded px-2 text-gray-700 font-bold hover:bg-gray-300">-</button>
+                                                <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                                                <button onClick={() => onUpdateQuantity(index, 1)} className="bg-gray-200 rounded px-2 text-gray-700 font-bold hover:bg-gray-300">+</button>
+                                            </div>
+                                            <div className="mr-4 w-16 text-left">
+                                                <p className="text-primary font-bold text-sm">{(item.selectedPrice * item.quantity).toFixed(0)} ج</p>
+                                            </div>
+                                            <button onClick={() => onRemoveItem(index)} className="text-red-500 hover:text-red-700 mr-2">
+                                                <i className="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {cart.length > 0 && (
+                                <>
+                                    <div className="border-t-2 border-primary pt-4 mb-6 text-sm">
+                                        <div className="flex justify-between mb-1">
+                                            <span>المجموع الفرعي:</span>
+                                            <span>{subtotal.toFixed(2)} ج</span>
+                                        </div>
+                                        {type === 'dinein' ? (
+                                            <>
+                                                <div className="flex justify-between mb-1 text-gray-600">
+                                                    <span>الخدمة (10%):</span>
+                                                    <span>{service.toFixed(2)} ج</span>
+                                                </div>
+                                                <div className="flex justify-between mb-1 text-gray-600">
+                                                    <span>ضريبة (14%):</span>
+                                                    <span>{tax.toFixed(2)} ج</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                             <div className="flex justify-between mb-1 text-gray-600">
+                                                <span>رسوم الدليفرى:</span>
+                                                <span>{deliveryFee.toFixed(2)} ج</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between mt-2 text-lg font-bold text-primary">
+                                            <span>الإجمالي:</span>
+                                            <span>{total.toFixed(2)} ج</span>
+                                        </div>
+                                    </div>
+
+                                    <form onSubmit={handleSubmit} className="space-y-3">
+                                        <h3 className="font-bold text-secondary mb-2 border-b pb-1">بيانات العميل</h3>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-bold mb-1">اسم العميل <span className="text-red-500">*</span></label>
+                                            <input type="text" id="name" required className="w-full p-2 border rounded focus:border-primary outline-none" onChange={handleInputChange} />
+                                        </div>
+
+                                        {type === 'dinein' ? (
+                                            <div>
+                                                <label className="block text-sm font-bold mb-1">رقم الطاولة <span className="text-red-500">*</span></label>
+                                                <input type="text" id="table" required className="w-full p-2 border rounded focus:border-primary outline-none" onChange={handleInputChange} />
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1">رقم الموبايل <span className="text-red-500">*</span></label>
+                                                    <input type="tel" id="phone" required className="w-full p-2 border rounded focus:border-primary outline-none" onChange={handleInputChange} />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1">العنوان <span className="text-red-500">*</span></label>
+                                                    <input type="text" id="address" required className="w-full p-2 border rounded focus:border-primary outline-none" onChange={handleInputChange} />
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <div className="flex-1">
+                                                        <label className="block text-sm font-bold mb-1">رقم العمارة <span className="text-red-500">*</span></label>
+                                                        <input type="text" id="building" required className="w-full p-2 border rounded focus:border-primary outline-none" onChange={handleInputChange} />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <label className="block text-sm font-bold mb-1">رقم الشقة</label>
+                                                        <input type="text" id="apartment" className="w-full p-2 border rounded focus:border-primary outline-none" onChange={handleInputChange} />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1">ملاحظات</label>
+                                                    <input type="text" id="notes" className="w-full p-2 border rounded focus:border-primary outline-none" onChange={handleInputChange} />
+                                                </div>
+                                            </>
+                                        )}
+
+                                        <button type="submit" className="w-full bg-primary hover:bg-[#b09355] text-white font-bold py-3 rounded-full transition-all mt-4">
+                                            إتمام الطلب عبر واتساب
+                                        </button>
+                                    </form>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // FloatingCart Component
+        const FloatingCart = ({ dineInCount, deliveryCount, onOpenDineIn, onOpenDelivery }) => {
+            return (
+                <div className="fixed bottom-4 right-4 left-4 z-[1000] flex justify-center md:justify-end gap-4 pointer-events-none">
+                    <div className="pointer-events-auto relative group cursor-pointer" onClick={onOpenDineIn}>
+                         <div className="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white shadow-lg bg-gradient-to-br from-[#28a745] to-[#218838] transform transition-transform group-hover:scale-110">
+                            <i className="fas fa-store text-xl mb-0.5"></i>
+                            <span className="text-[10px] font-bold">صالة</span>
+                         </div>
+                         {dineInCount > 0 && (
+                            <div className="absolute -top-1 -left-1 bg-[#ff4757] text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-sm">
+                                {dineInCount}
+                            </div>
+                         )}
+                    </div>
+
+                    <div className="pointer-events-auto relative group cursor-pointer" onClick={onOpenDelivery}>
+                         <div className="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white shadow-lg bg-gradient-to-br from-[#007bff] to-[#0056b3] transform transition-transform group-hover:scale-110">
+                            <i className="fas fa-motorcycle text-xl mb-0.5"></i>
+                            <span className="text-[10px] font-bold">دليفرى</span>
+                         </div>
+                         {deliveryCount > 0 && (
+                            <div className="absolute -top-1 -left-1 bg-[#ff4757] text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-sm">
+                                {deliveryCount}
+                            </div>
+                         )}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- APP COMPONENT ---
+        const App = () => {
+            const [activeCategory, setActiveCategory] = useState('all');
+            const [searchQuery, setSearchQuery] = useState('');
+            
+            // Cart States
+            const [dineInCart, setDineInCart] = useState([]);
+            const [deliveryCart, setDeliveryCart] = useState([]);
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            const [activeCartType, setActiveCartType] = useState('dinein');
+            
+            // Notification
+            const [notification, setNotification] = useState(null);
+
+            // Filter Logic
+            const filteredCategories = menuData.map(mainCat => ({
+                ...mainCat,
+                subCategories: mainCat.subCategories.map(subCat => ({
+                    ...subCat,
+                    items: subCat.items.filter(item => {
+                        // Global search overrides category tabs
+                        if (searchQuery) {
+                            return item.name.includes(searchQuery);
+                        }
+                        
+                        // If strictly in 'contact' mode, hide all food items
+                        if (activeCategory === 'contact') {
+                            return false;
+                        }
+
+                        // If 'all' is selected, show everything
+                        if (activeCategory === 'all') {
+                            return true;
+                        }
+
+                        // Strict tab filtering: Only show items belonging to the active main category
+                        return mainCat.id === activeCategory;
+                    })
+                })).filter(subCat => subCat.items.length > 0)
+            })).filter(mainCat => mainCat.subCategories.length > 0);
+
+            const handleAddToCart = (item, type) => {
+                const setCart = type === 'dinein' ? setDineInCart : setDeliveryCart;
+                const currentCart = type === 'dinein' ? dineInCart : deliveryCart;
+
+                const existingItemIndex = currentCart.findIndex(
+                    i => i.id === item.id && i.selectedSize === item.selectedSize
+                );
+
+                if (existingItemIndex > -1) {
+                    const newCart = [...currentCart];
+                    newCart[existingItemIndex].quantity += 1;
+                    setCart(newCart);
+                } else {
+                    setCart([...currentCart, item]);
+                }
+
+                setNotification(`تمت إضافة "${item.name}" إلى سلة ${type === 'dinein' ? 'الصالة' : 'الدليفرى'}`);
+                setTimeout(() => setNotification(null), 3000);
+            };
+
+            const handleUpdateQuantity = (index, delta) => {
+                const setCart = activeCartType === 'dinein' ? setDineInCart : setDeliveryCart;
+                const currentCart = activeCartType === 'dinein' ? dineInCart : deliveryCart;
+                
+                const newCart = [...currentCart];
+                newCart[index].quantity += delta;
+                
+                if (newCart[index].quantity <= 0) {
+                    newCart.splice(index, 1);
+                }
+                setCart(newCart);
+            };
+
+            const handleRemoveItem = (index) => {
+                const setCart = activeCartType === 'dinein' ? setDineInCart : setDeliveryCart;
+                const currentCart = activeCartType === 'dinein' ? dineInCart : deliveryCart;
+                
+                const newCart = [...currentCart];
+                newCart.splice(index, 1);
+                setCart(newCart);
+            };
+
+            const handleClearCart = () => {
+                 const setCart = activeCartType === 'dinein' ? setDineInCart : setDeliveryCart;
+                 setCart([]);
+            };
+
+            // Scroll to top when category changes
+            useEffect(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, [activeCategory]);
+
+            const scrollToTop = () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            return (
+                <div className="min-h-screen pb-20 relative bg-[#f9f7f2]">
+                    {/* Header Text-Only (Professional) */}
+                    <header className="bg-[#3d2c1d] text-[#f8f4e6] py-12 px-4 shadow-md text-center border-b-4 border-[#c9a961]">
+                         <div className="container mx-auto">
+                            <h1 className="text-5xl md:text-7xl font-black mb-4 tracking-tight text-[#c9a961]">
+                                تبارك
+                            </h1>
+                            <div className="flex items-center justify-center gap-4 text-sm md:text-lg text-gray-300 font-bold tracking-widest uppercase">
+                                <span>فول</span>
+                                <span className="w-2 h-2 rounded-full bg-[#c9a961]"></span>
+                                <span>فلافل</span>
+                                <span className="w-2 h-2 rounded-full bg-[#c9a961]"></span>
+                                <span>مشويات</span>
+                            </div>
+                         </div>
+                    </header>
+
+                    <Navbar 
+                        categories={menuData}
+                        activeCategory={activeCategory}
+                        searchQuery={searchQuery}
+                        onCategoryClick={setActiveCategory}
+                        onSearchChange={setSearchQuery}
+                        onClearFilter={() => setSearchQuery('')}
+                    />
+
+                    <main className="container mx-auto px-4 py-8 max-w-5xl">
+                        {/* No Results Message */}
+                        {activeCategory !== 'contact' && filteredCategories.length === 0 && searchQuery && (
+                            <div className="text-center py-20 text-gray-500 text-xl border-2 border-dashed border-gray-300 rounded-lg">
+                                عذراً، لم يتم العثور على منتجات مطابقة.
+                            </div>
+                        )}
+
+                        {/* Categories Display */}
+                        {filteredCategories.map(mainCat => (
+                            <div key={mainCat.id} className="mb-12 animate-fade-in">
+                                <div className="flex items-center justify-center mb-8">
+                                    <div className="h-px bg-primary w-12 md:w-24 opacity-50"></div>
+                                    <div className="mx-4 text-3xl font-bold text-secondary flex items-center gap-3">
+                                        <i className={`fas ${mainCat.icon} text-primary`}></i>
+                                        {mainCat.title}
+                                    </div>
+                                    <div className="h-px bg-primary w-12 md:w-24 opacity-50"></div>
+                                </div>
+                                
+                                <div className="space-y-10">
+                                    {mainCat.subCategories.map(subCat => (
+                                        <div key={subCat.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                            <h2 className="text-xl font-bold text-secondary mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
+                                                <i className={`fas ${subCat.icon} text-primary text-sm`}></i>
+                                                {subCat.title}
+                                            </h2>
+                                            {/* Grid adjusted for Text-Only Cards: 1 Column on Mobile, 2 on Desktop */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                                {subCat.items.map(item => (
+                                                    <MenuItem key={item.id} item={item} onAddToCart={handleAddToCart} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Contact Section - Shown if 'contact' is active OR 'all' is active (at bottom) */}
+                        {(activeCategory === 'contact' || activeCategory === 'all') && !searchQuery && (
+                            <section id="contact-section" className="bg-white rounded-xl shadow-md p-6 md:p-10 mt-8 animate-fade-in border-t-4 border-primary">
+                                <h2 className="text-3xl font-bold text-secondary pb-6 mb-6 text-center border-b border-gray-200">
+                                    تواصل معنا
+                                </h2>
+                                
+                                <div className="flex flex-wrap gap-8">
+                                    <div className="flex-1 min-w-[300px]">
+                                        <h3 className="text-xl font-bold text-primary mb-6">معلومات الاتصال</h3>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center p-4 rounded-lg bg-[#f9f7f2] border border-gray-200 hover:border-primary transition-colors">
+                                                <i className="fas fa-phone text-secondary text-xl ml-4 w-8 text-center"></i>
+                                                <a href="tel:01225708091" className="text-lg text-secondary font-bold">01225708091</a>
+                                            </div>
+                                            <div className="flex items-center p-4 rounded-lg bg-[#f9f7f2] border border-gray-200 hover:border-primary transition-colors">
+                                                <i className="fas fa-phone text-secondary text-xl ml-4 w-8 text-center"></i>
+                                                <a href="tel:01501375700" className="text-lg text-secondary font-bold">01501375700</a>
+                                            </div>
+                                            <div className="flex items-center p-4 rounded-lg bg-[#f9f7f2] border border-gray-200 hover:border-primary transition-colors">
+                                                <i className="fab fa-whatsapp text-[#25D366] text-xl ml-4 w-8 text-center"></i>
+                                                <a href="https://wa.me/201030566078" target="_blank" className="text-lg text-secondary font-bold">01030566078 (واتساب)</a>
+                                            </div>
+                                            
+                                            <div className="bg-[#f9f7f2] p-5 rounded-lg mt-6 border border-gray-200 hover:border-primary cursor-pointer transition-colors" onClick={() => window.open("https://www.google.com/maps/search/?api=1&query=30.000,31.000", "_blank")}>
+                                                <h4 className="font-bold text-secondary mb-2 flex items-center">
+                                                    <i className="fas fa-map-marker-alt text-primary ml-2"></i> عنواننا
+                                                </h4>
+                                                <p className="leading-relaxed text-gray-600">6 أكتوبر، حدائق أكتوبر، منطقة 390 فدان، بجوار مدرسة حمزة</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex-1 min-w-[300px] h-[350px] rounded-lg overflow-hidden shadow-inner border border-gray-200">
+                                        <iframe 
+                                            src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3457.226836360078!2d31.002149684887176!3d29.94415328191885!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjnCsDU2JzM5LjAiTiAzMMKwNTknNTkuOSJF!5e0!3m2!1sar!2seg!4v1763242419468!5m2!1sar!2seg" 
+                                            width="100%" 
+                                            height="100%" 
+                                            style={{border:0}} 
+                                            allowFullScreen 
+                                            loading="lazy"
+                                        ></iframe>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+                    </main>
+
+                    <FloatingCart 
+                        dineInCount={dineInCart.reduce((sum, i) => sum + i.quantity, 0)}
+                        deliveryCount={deliveryCart.reduce((sum, i) => sum + i.quantity, 0)}
+                        onOpenDineIn={() => { setActiveCartType('dinein'); setIsCartOpen(true); }}
+                        onOpenDelivery={() => { setActiveCartType('delivery'); setIsCartOpen(true); }}
+                    />
+
+                    <CartModal 
+                        isOpen={isCartOpen}
+                        type={activeCartType}
+                        cart={activeCartType === 'dinein' ? dineInCart : deliveryCart}
+                        onClose={() => setIsCartOpen(false)}
+                        onUpdateQuantity={handleUpdateQuantity}
+                        onRemoveItem={handleRemoveItem}
+                        onClearCart={handleClearCart}
+                    />
+                    
+                    {/* Notification Toast */}
+                    {notification && (
+                        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-secondary text-primary border border-primary px-6 py-3 rounded-md shadow-xl z-[3000] font-bold animate-bounce-in">
+                            {notification}
+                        </div>
+                    )}
+
+                     {/* Scroll To Top */}
+                    <button 
+                        onClick={scrollToTop}
+                        className="fixed bottom-24 left-4 bg-primary text-secondary p-4 rounded-full shadow-lg z-40 hover:scale-110 transition-transform hover:bg-[#b09355]"
+                        aria-label="Scroll to top"
+                    >
+                        <i className="fas fa-arrow-up"></i>
+                    </button>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
